@@ -1,0 +1,10 @@
+name = open voxb client
+description = client for voxb; handle user reviews
+core = 7.x
+version = 7.x-0.1
+package = OpenLibrary
+
+files[] = open_voxb.module
+files[] = open_voxb.request.inc
+
+dependencies[] = ting_client

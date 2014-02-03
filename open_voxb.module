@@ -1,0 +1,59 @@
+<?php
+
+/**
+ * Implements hook_ting_client_webservice (@see ting_client.module)
+ * */
+function open_voxb_ting_client_webservice() {
+  $ret = array();
+  $ret['voxb']['class'] = 'open_voxb';
+  $ret['voxb']['url'] = 'open_voxb_url';
+  $ret['voxb']['xsdNamespace'] = array('http://oss.dbc.dk/ns/voxb');
+  return $ret;
+}
+
+/** Do fetchDataRequest
+ * @param string isbn; the ISBN identifier to look for
+ * @param string outputType; 
+ * 
+ * return mixed $response; response from webservice
+ */
+function open_voxb_fetchDataRequest_by_isbn($isbn, $outputType = 'xml') {
+  // set additional parameters for fetchData request
+  // @TODO check which institutionId to use
+  $fetchData = array(    
+    'objectIdentifierValue' => $isbn,
+    'objectIdentifierType' => 'ISBN',
+    'institutionId' => '870970',
+  );
+  // and yet another parameter. Apparently contentType is always set to 'all'
+  // @TODO check other output types
+  $output = array(
+    'contentType' => 'all',
+  );
+
+  $client = new ting_client_class();
+  $response = $client->do_request(
+      'voxb', array(
+    'action' => 'fetchDataRequest',
+    'fetchData' => $fetchData,
+    'output' => $output,
+    'outputType' => $outputType,
+      )
+  );
+  return $response;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter (ting_client_admin_webservices_settings)
+ * add a field to webservice client settings
+ *  
+ * */
+function open_voxb_form_ting_client_admin_webservices_settings_alter(&$form, &$form_state) {
+  $form['ting']['open_voxb_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('OpenVoxb URL'),
+    '#description' => t('URL to voxb e.g.: http://voxb.addi.dk/1.3/'),
+    '#required' => TRUE,
+    '#default_value' => variable_get('open_voxb_url', FALSE),
+  );
+}
