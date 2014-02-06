@@ -1,0 +1,6 @@
+name = open voxb mockup
+description = mockup webservice for voxb;
+core = 7.x
+version = 7.x-0.1
+
+dependencies[] = ting_client

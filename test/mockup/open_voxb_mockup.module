@@ -1,0 +1,92 @@
+<?php
+
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * Implements hook_menu 
+ */
+function open_voxb_mockup_menu() {
+  $items['open_voxb_mockup'] = array(
+    'page callback' => 'open_voxb_mockup_request',
+    'access callback' => TRUE,
+  );
+  $items['open_voxb_mockup/test'] = array(
+    'page callback' => 'open_voxb_mockup_test',
+    'access callback' => TRUE
+  );
+
+  $items['open_voxb_mockup/disable'] = array(
+    'page callback' => 'open_voxb_mockup_disable_me',
+    'access callback' => TRUE
+  );
+  return $items;
+}
+
+function open_voxb_mockup_test() {
+  return '
+    <form name="test" action="open_voxb_mockup" method="POST" target="_blank">
+      <textarea name="xml"></textarea>
+      <input type="submit" name="sub" value="submit"/>
+    </form>';
+}
+
+/** Disable this module
+ * 
+ */
+function open_voxb_mockup_disable_me() {
+  module_disable(array('open_voxb_mockup'));
+  exit;
+}
+
+/**
+ * Faking the request and returns result.
+ * If other requests are made than on pid[0] = 870970-basis:28542941 &&  pid[0] = 870970-basis:28794932 no holdings will be returned.
+ * @return String json
+ */
+function open_voxb_mockup_request() {
+  if (isset($_POST['xml'])) {
+    $data = rawurldecode($_POST['xml']);
+  }
+  else {
+    $data = file_get_contents('php://input');
+  }
+
+  if ($data) {
+    $xp = open_voxb_mockup_parse_xml($data);
+  }
+  else {
+    echo 'welcome to open_voxb_mockup mockup';
+    return;
+  }
+
+  $path = drupal_get_path('module', 'open_voxb_mockup');
+
+  $query = '//voxb:fetchDataRequest';
+  $nodelist = $xp->query($query);
+  if ($nodelist->length > 0) {
+    $resp = file_get_contents($path . '/fetchDataResponse.xml');
+  }
+
+  drupal_add_http_header('Content-Type', 'application/xml; charset=utf-8');
+  print $resp;
+  exit;
+}
+
+/**
+ * Get an xpath object from given xml
+ * @param type request from ting-client
+ * @return object; xpath
+ */
+function open_voxb_mockup_parse_xml($xml) {
+  $dom = new DOMDocument();
+  if (!$dom->loadXML($xml)) {
+    return FALSE;
+  }
+  $xp = new DOMXPath($dom);
+  $xp->registerNamespace('voxb', 'http://oss.dbc.dk/ns/voxb');
+
+  return $xp;
+}
