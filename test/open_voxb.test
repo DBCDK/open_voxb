@@ -25,11 +25,6 @@ class OpenVoxbWebTestCase extends DrupalWebTestCase {
     $this->assertTrue(TRUE);
   }
   
-  public function testSomething(){
-    // @TODO test something
-  }
-  
-  
  public function tearDown(){
    parent::tearDown();
    // clean up the real website

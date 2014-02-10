@@ -42,13 +42,14 @@ function open_voxb_mockup_disable_me() {
 }
 
 /**
- * Faking the request and returns result.
- * If other requests are made than on pid[0] = 870970-basis:28542941 &&  pid[0] = 870970-basis:28794932 no holdings will be returned.
+ * Faking the request and returns result. 
  * @return String json
  */
 function open_voxb_mockup_request() {
-  if (isset($_POST['xml'])) {
-    $data = rawurldecode($_POST['xml']);
+  $path = drupal_get_path('module', 'open_voxb_mockup');
+
+  if (isset($_REQUEST['xml'])) {
+    $data = rawurldecode($_REQUEST['xml']);
   }
   else {
     $data = file_get_contents('php://input');
@@ -62,15 +63,31 @@ function open_voxb_mockup_request() {
     return;
   }
 
-  $path = drupal_get_path('module', 'open_voxb_mockup');
-
+  // fetchDataRequest
   $query = '//voxb:fetchDataRequest';
   $nodelist = $xp->query($query);
   if ($nodelist->length > 0) {
     $resp = file_get_contents($path . '/fetchDataResponse.xml');
+    $type = 'application/xml; charset=utf-8';
   }
-
-  drupal_add_http_header('Content-Type', 'application/xml; charset=utf-8');
+  $query = '//getObjectRequest';
+  $nodelist = $xp->query($query);
+  if ($nodelist->length > 0) {
+    $resp = file_get_contents($path . '/getObjectResponse.json');
+    $type = 'application/json';
+  }
+  $query = '//searchRequest';
+  $nodelist = $xp->query($query);
+  if ($nodelist->length > 0) {
+    $resp = file_get_contents($path . '/searchResponse.json');
+    $type = 'application/json';
+  }
+  // not sure what these do .. found it on google -- apparently
+  // the xml get poisoned with blanks in the beginning of the file, and
+  // this is a way to fix it
+  ob_end_clean();
+  ob_start();
+  drupal_add_http_header('Content-Type', $type);
   print $resp;
   exit;
 }
@@ -81,6 +98,7 @@ function open_voxb_mockup_request() {
  * @return object; xpath
  */
 function open_voxb_mockup_parse_xml($xml) {
+  //$xml = trim($xml);
   $dom = new DOMDocument();
   if (!$dom->loadXML($xml)) {
     return FALSE;
