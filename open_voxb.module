@@ -8,22 +8,92 @@ function open_voxb_ting_client_webservice() {
   $ret['voxb']['class'] = 'open_voxb';
   $ret['voxb']['url'] = 'open_voxb_url';
   $ret['voxb']['xsdNamespace'] = array('http://oss.dbc.dk/ns/voxb');
+
   return $ret;
 }
 
+/** Do createMyDataRequest. This method handles rating for given objectId.
+ *
+ * @param string $isbn ; ISBN for material to rate
+ * @param inf $rating ; the rating to apply to material
+ * @param string $voxb_id ; UserID from voxb
+ * @return bool|stdClass|string; FALSE if no succes, xml or json on success
+ */
+function open_voxb_createMyDataRequest($id, $rating, $voxb_id, $identifierType = 'LOCAL', $outputType = 'xml') {
+  $item = array(
+    'rating' => $rating,
+  );
+  $object = array(
+    'objectIdentifierValue' => $id,
+    'objectIdentifierType' => $identifierType,
+  );
+
+  $client = new ting_client_class();
+  $response = $client->do_request('voxb', array(
+      'action' => 'createMyDataRequest',
+      'userId' => $voxb_id,
+      'institutionId' => '1',
+      'item' => $item,
+      'object' => $object,
+      'outputType' => $outputType,
+    ));
+
+  return $response;
+}
+
+/** Dio fetchDataRequest
+ * @param $userId
+ * @param string $outputType
+ * @return mixed;
+ */
+function open_voxb_fetchMyDataRequest($userId, $outputType = 'xml') {
+  $client = new ting_client_class();
+  $response = $client->do_request('voxb', array(
+      'action' => 'fetchMyDataRequest',
+      'userId' => $userId,
+      'outputType' => $outputType,
+    ));
+
+  return $response;
+}
+
+/*************** updateMyDataRequest ************
+ * the following methods all goes via same voxb request
+ * that is voxb::updateMyDataRequest. Each data option (rating, tags, reviews)
+ * has its own method e.g updateRating, updateReview etc..
+ */
+
+function open_voxb_updateRating($voxbIdentifier, $rating, $outputType = 'xml') {
+  $item = array(
+    'rating' => $rating,
+  );
+
+  $client = new ting_client_class();
+  $response = $client->do_request('voxb', array(
+      'action' => 'updateMyDataRequest',
+      'voxbIdentifier' => $voxbIdentifier,
+      'institutionId' => '1',
+      'item' => $item,
+      'outputType' => $outputType,
+    ));
+
+  return $response;
+}
+
+/******************* end updateMyDataRequest ************/
+
 /** Do fetchDataRequest
  * @param string isbn; the ISBN identifier to look for
- * @param string outputType; 
- * 
+ * @param string outputType;
+ *
  * return mixed $response; response from webservice
  */
-function open_voxb_fetchDataRequest_by_isbn($isbn, $outputType = 'xml') {
+function open_voxb_fetchDataRequest($id, $identifierType = 'LOCAL', $outputType = 'xml') {
   // set additional parameters for fetchData request
-  // @TODO check which institutionId to use
-  $fetchData = array(    
-    'objectIdentifierValue' => $isbn,
-    'objectIdentifierType' => 'ISBN',
-    'institutionId' => '870970',
+  $fetchData = array(
+    'objectIdentifierValue' => $id,
+    'objectIdentifierType' => $identifierType,
+    'institutionId' => '1',
   );
   // and yet another parameter. Apparently contentType is always set to 'all'
   // @TODO check other output types
@@ -32,27 +102,65 @@ function open_voxb_fetchDataRequest_by_isbn($isbn, $outputType = 'xml') {
   );
 
   $client = new ting_client_class();
-  $response = $client->do_request(
-      'voxb', array(
-    'action' => 'fetchDataRequest',
-    'fetchData' => $fetchData,
-    'output' => $output,
-    'outputType' => $outputType,
-      )
-  );
+  $response = $client->do_request('voxb', array(
+      'action' => 'fetchDataRequest',
+      'fetchData' => $fetchData,
+      'output' => $output,
+      'outputType' => $outputType,
+    ));
+
   return $response;
+}
+
+/** Do createUserRequest
+ * @param $userId
+ * @param string $outputType
+ * @return mixed
+ */
+function open_voxb_createUserRequest($userId, $outputType = 'xml') {
+  // userId is email-address ..
+  // set the userAlias .. aliasName MUST be unique or request is rejected from voxb
+  $userAlias = array(
+    'aliasName' => open_voxb_create_unique_alias($userId),
+    'profileLink' => 'bibliotek.dk',
+  );
+
+  $fingerprint = array(
+    'userIdentifierValue' => $userId,
+    'userIdentifierType' => 'local',
+    'identityProvider' => 'bibliotek.dk',
+    'institutionId' => 1,
+  );
+
+  $client = new ting_client_class();
+  $response = $client->do_request('voxb', array(
+      'action' => 'createUserRequest',
+      'userAlias' => $userAlias,
+      'authenticationFingerprint' => $fingerprint,
+      'outputType' => $outputType,
+    ));
+
+  return $response;
+}
+
+/** function to create a unique alias - users can change their alias later .. if they want to
+ * @param $mail
+ */
+function open_voxb_create_unique_alias($mail) {
+  // @TODO give a better alias e.g the drupal userId
+  return uniqid() . $mail;
 }
 
 /**
  * Implements hook_form_FORM_ID_alter (ting_client_admin_webservices_settings)
  * add a field to webservice client settings
- *  
+ *
  * */
 function open_voxb_form_ting_client_admin_webservices_settings_alter(&$form, &$form_state) {
   $form['ting']['open_voxb_url'] = array(
     '#type' => 'textfield',
     '#title' => t('OpenVoxb URL'),
-    '#description' => t('URL to voxb e.g.: http://voxb.addi.dk/1.3/'),
+    '#description' => t('URL to voxb e.g.: https://voxb.addi.dk/1.3/'),
     '#required' => TRUE,
     '#default_value' => variable_get('open_voxb_url', FALSE),
   );
