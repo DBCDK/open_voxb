@@ -14,12 +14,12 @@ function open_voxb_ting_client_webservice() {
 
 /** Do createMyDataRequest. This method handles rating for given objectId.
  *
- * @param string $isbn ; ISBN for material to rate
+ * @param string $id ; id (pid) for material to rate
  * @param inf $rating ; the rating to apply to material
  * @param string $voxb_id ; UserID from voxb
  * @return bool|stdClass|string; FALSE if no succes, xml or json on success
  */
-function open_voxb_createMyDataRequest($id, $rating, $voxb_id, $identifierType = 'LOCAL', $outputType = 'xml') {
+function open_voxb_createMyDataRequest($id, $rating, $voxb_id, $identifierType = 'FAUST', $outputType = 'xml') {
   $item = array(
     'rating' => $rating,
   );
@@ -41,7 +41,42 @@ function open_voxb_createMyDataRequest($id, $rating, $voxb_id, $identifierType =
   return $response;
 }
 
-/** Dio fetchDataRequest
+/** Do createDataRequest. This method handles a review
+ * @param string $id ; id (pid) for material to rate
+ * @param object $review ; the review to apply to material ([title,Data])
+ * @param string $voxb_id ; UserID from voxb
+ * @param string $outputType ; desired output from webservice
+ *
+ * @return bool|stdClass|string; FALSE if no succes, xml or json on success
+ */
+function open_voxb_createMyReviewRequest($id, $review, $voxb_id, $identifierType = 'LOCAL', $outputType = 'xml'){
+   $item = array(
+    'review' => array(
+      'reviewTitle' => $review->title,
+      'reviewData' => $review->Data,
+      'reviewType' => 'TXT',
+    ),
+  );
+  $object = array(
+    'objectIdentifierValue' => $id,
+    'objectIdentifierType' => $identifierType,
+  );
+
+  $client = new ting_client_class();
+  $response = $client->do_request('voxb', array(
+      'action' => 'createMyDataRequest',
+      'userId' => $voxb_id,
+      'institutionId' => '1',
+      'item' => $item,
+      'object' => $object,
+      'outputType' => $outputType,
+    ));
+
+  return $response;
+}
+
+
+/** Do fetchDataRequest
  * @param $userId
  * @param string $outputType
  * @return mixed;
@@ -88,13 +123,15 @@ function open_voxb_updateRating($voxbIdentifier, $rating, $outputType = 'xml') {
  *
  * return mixed $response; response from webservice
  */
-function open_voxb_fetchDataRequest($id, $identifierType = 'LOCAL', $outputType = 'xml') {
+function open_voxb_fetchDataRequest($id, $identifierType = 'FAUST', $institutionId = NULL, $outputType = 'xml') {
   // set additional parameters for fetchData request
   $fetchData = array(
     'objectIdentifierValue' => $id,
     'objectIdentifierType' => $identifierType,
-    'institutionId' => '1',
   );
+  if(isset($institutionId)){
+    $fetchData['institutionId'] = $institutionId;
+  }
   // and yet another parameter. Apparently contentType is always set to 'all'
   // @TODO check other output types
   $output = array(
