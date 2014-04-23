@@ -1,10 +1,6 @@
 <?php
 
-/**
- * @file
- * OpenHoldingsStatus : open_holdingstatus class
- **/
-class open_voxb extends TingClientRequest
+class open_voxb extends TingClientRequest Implements ITingClientRequestCache
 {
 
     protected $outputType;
