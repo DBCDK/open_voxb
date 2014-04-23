@@ -8,6 +8,7 @@ function open_voxb_ting_client_webservice() {
   $ret['voxb']['class'] = 'open_voxb';
   $ret['voxb']['url'] = 'open_voxb_url';
   $ret['voxb']['xsdNamespace'] = array('http://oss.dbc.dk/ns/voxb');
+  $ret['voxb']['xsd_url'] = 'voxb_xsd_url';
 
   return $ret;
 }
@@ -159,7 +160,7 @@ function open_voxb_createUserRequest($userId, $outputType = 'xml') {
   // set the userAlias .. aliasName MUST be unique or request is rejected from voxb
   $userAlias = array(
     'aliasName' => open_voxb_create_unique_alias($userId),
-    'profileLink' => 'bibliotek.dk',
+    'profileLink' => 'http://bibliotek.dk/voxb/'.$userId,
   );
 
   $fingerprint = array(
@@ -183,9 +184,8 @@ function open_voxb_createUserRequest($userId, $outputType = 'xml') {
 /** function to create a unique alias - users can change their alias later .. if they want to
  * @param $mail
  */
-function open_voxb_create_unique_alias($mail) {
-  // @TODO give a better alias e.g the drupal userId
-  return uniqid() . $mail;
+function open_voxb_create_unique_alias($id) {
+  return 'bibliotek.dk:'. $id;
 }
 
 /**
@@ -201,4 +201,13 @@ function open_voxb_form_ting_client_admin_webservices_settings_alter(&$form, &$f
     '#required' => TRUE,
     '#default_value' => variable_get('open_voxb_url', FALSE),
   );
+
+  $form['ting']['voxb_xsd_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('voxb XSD URL'),
+    '#description' => t('URL to voxb xml schema e.g. https://voxb.addi.dk/x.x/voxb.xsd'),
+    '#required' => TRUE,
+    '#default_value' => variable_get('voxb_xsd_url', FALSE),
+  );
+
 }

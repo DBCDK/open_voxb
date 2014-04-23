@@ -169,7 +169,7 @@ class open_voxb extends TingClientRequest
         return $this->output;
     }
 
-    public function getRequest() {
+/*    public function getRequest() {
         $service_url = variable_get('open_voxb_url');
         if (function_exists('ting_client_validate_xsd')) {
             $params = ting_client_validate_xsd('voxb.xsd', $this->getAction());
@@ -182,7 +182,7 @@ class open_voxb extends TingClientRequest
             }
         }
         return $this;
-    }
+    }*/
 
     // empty;
     public function processResponse(stdClass $result) {
