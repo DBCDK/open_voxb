@@ -13,6 +13,8 @@ function open_voxb_ting_client_webservice() {
   return $ret;
 }
 
+
+
 /** Do createMyDataRequest. This method handles rating for given objectId.
  *
  * @param string $id ; id (pid) for material to rate
@@ -42,15 +44,16 @@ function open_voxb_createMyDataRequest($id, $rating, $voxb_id, $identifierType =
   return $response;
 }
 
+
 /** Do createDataRequest. This method handles a review
- * @param string $id ; id (pid) for material to rate
+ * @param string $id ; id (FAUST) for material to rate
  * @param object $review ; the review to apply to material ([title,Data])
  * @param string $voxb_id ; UserID from voxb
  * @param string $outputType ; desired output from webservice
  *
  * @return bool|stdClass|string; FALSE if no succes, xml or json on success
  */
-function open_voxb_createMyReviewRequest($id, $review, $voxb_id, $identifierType = 'LOCAL', $outputType = 'xml'){
+function open_voxb_createMyReviewRequest($id, $review, $voxb_id, $identifierType = 'FAUST', $outputType = 'xml'){
    $item = array(
     'review' => array(
       'reviewTitle' => $review->title,
@@ -99,21 +102,51 @@ function open_voxb_fetchMyDataRequest($userId, $outputType = 'xml') {
  * has its own method e.g updateRating, updateReview etc..
  */
 
+
+/** update a rating
+ */
 function open_voxb_updateRating($voxbIdentifier, $rating, $outputType = 'xml') {
   $item = array(
     'rating' => $rating,
   );
+  return open_voxb_updateMyDataRequest($item, $voxbIdentifier, $outputType);
+}
 
+/** Update a review item
+ * @param $voxbIdentifier
+ * @param $review
+ * @param string $outputType
+ * @return bool|stdClass|string
+ */
+function open_voxb_updateReview($voxbIdentifier, $review, $outputType = 'xml'){
+  $item = array(
+    'review' => array(
+      'reviewTitle' => $review->title,
+      'reviewData' => $review->Data,
+      'reviewType' => 'TXT',
+    ),
+  );
+  return open_voxb_updateMyDataRequest($item, $voxbIdentifier, $outputType);
+}
+
+/** common execution method for updateMyDataRequest
+ * @param $item
+ * @param $voxbIdentifier
+ * @param $outputType
+ * @return bool|stdClass|string
+ */
+function open_voxb_updateMyDataRequest($item, $voxbIdentifier, $outputType){
   $client = new ting_client_class();
   $response = $client->do_request('voxb', array(
-      'action' => 'updateMyDataRequest',
-      'voxbIdentifier' => $voxbIdentifier,
-      'institutionId' => '1',
-      'item' => $item,
-      'outputType' => $outputType,
-    ));
+    'action' => 'updateMyDataRequest',
+    'voxbIdentifier' => $voxbIdentifier,
+    'institutionId' => '1',
+    'item' => $item,
+    'outputType' => $outputType,
+  ));
 
   return $response;
+
 }
 
 /******************* end updateMyDataRequest ************/
@@ -130,11 +163,12 @@ function open_voxb_fetchDataRequest($id, $identifierType = 'FAUST', $institution
     'objectIdentifierValue' => $id,
     'objectIdentifierType' => $identifierType,
   );
+  // institutionid (optional)
   if(isset($institutionId)){
     $fetchData['institutionId'] = $institutionId;
   }
-  // and yet another parameter. Apparently contentType is always set to 'all'
-  // @TODO check other output types
+  // contentytper. possible values:
+  // review, tags, summaryTags, rating, totalRatings, local or all
   $output = array(
     'contentType' => 'all',
   );
@@ -178,6 +212,27 @@ function open_voxb_createUserRequest($userId, $outputType = 'xml') {
       'outputType' => $outputType,
     ));
 
+  return $response;
+}
+
+/** Do fetchUserRequest by fingerprint
+ * @param $userIdentifierValue
+ * @return bool|stdClass|string
+ */
+function open_voxb_fetchUserByFingerPrint($userIdentifierValue,$outputType = 'xml'){
+  $authenticationFingerprint = array(
+    'userIdentifierValue' => $userIdentifierValue,
+    'userIdentifierType' => 'local',
+    'identityProvider' => 'bibliotek.dk',
+    'institutionId' => 1,
+  );
+  $client = new ting_client_class();
+  $response = $client->do_request('voxb', array(
+      'action' => 'fetchUserRequest',
+      'authenticationFingerprint' => $authenticationFingerprint,
+      'outputType' => $outputType,
+    )
+  );
   return $response;
 }
 
