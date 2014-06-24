@@ -151,7 +151,10 @@ function open_voxb_updateMyDataRequest($item, $voxbIdentifier, $outputType){
 
 /******************* end updateMyDataRequest ************/
 
+/******************* fetchData *************************/
+
 /** Do fetchDataRequest
+ *  this method looks for voxb objects identified by type,value
  * @param string isbn; the ISBN identifier to look for
  * @param string outputType;
  *
@@ -163,6 +166,30 @@ function open_voxb_fetchDataRequest($id, $identifierType = 'FAUST', $institution
     'objectIdentifierValue' => $id,
     'objectIdentifierType' => $identifierType,
   );
+
+  return open_voxb_fetchData($fetchData,  $institutionId, $outputType);
+}
+
+/** Do fetchDataRequest
+ *  this method fetches a single item identified by item_id
+ *
+ * @param $itemid
+ */
+function open_voxb_fetchData_by_itemid($itemid, $outputType = 'xml'){
+  $fetchData = array(
+    'voxbIdentifier' => $itemid,
+  );
+
+  return open_voxb_fetchData($fetchData,NULL, $outputType);
+}
+
+/** Common execution method for fetchDataRequest
+ * @param $fetchData
+ * @param null $institutionId
+ * @param string $outputType
+ * @return bool|stdClass|string
+ */
+function open_voxb_fetchData($fetchData, $institutionId = NULL, $outputType = 'xml'){
   // institutionid (optional)
   if(isset($institutionId)){
     $fetchData['institutionId'] = $institutionId;
@@ -175,14 +202,17 @@ function open_voxb_fetchDataRequest($id, $identifierType = 'FAUST', $institution
 
   $client = new ting_client_class();
   $response = $client->do_request('voxb', array(
-      'action' => 'fetchDataRequest',
-      'fetchData' => $fetchData,
-      'output' => $output,
-      'outputType' => $outputType,
-    ));
+    'action' => 'fetchDataRequest',
+    'fetchData' => $fetchData,
+    'output' => $output,
+    'outputType' => $outputType,
+  ));
 
   return $response;
 }
+
+
+/*****************' end fetchData ******************************7
 
 /** Do createUserRequest
  * @param $userId
@@ -212,6 +242,21 @@ function open_voxb_createUserRequest($userId, $outputType = 'xml') {
       'outputType' => $outputType,
     ));
 
+  return $response;
+}
+
+/** Do fetchUserRequest by userId
+ * @param $userId
+ * @return mixed
+ */
+function open_voxb_fetch_user($userId, $outputType = 'xml'){
+  $client = new ting_client_class();
+  $response = $client->do_request('voxb', array(
+      'action' => 'fetchUserRequest',
+      'userId' => $userId,
+      'outputType' => $outputType,
+    )
+  );
   return $response;
 }
 
