@@ -294,7 +294,16 @@ function open_voxb_create_unique_alias($id) {
  *
  * */
 function open_voxb_form_ting_client_admin_webservices_settings_alter(&$form, &$form_state) {
-  $form['ting']['open_voxb_url'] = array(
+
+  $form['voxb'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'VoxB settings',
+    '#description' => t('The VoxB service collect user-created data, such as reviews, ratings and tags in a central database.'),
+    '#collapsible' => TRUE,
+    '#tree' => FALSE,
+  );
+
+  $form['voxb']['open_voxb_url'] = array(
     '#type' => 'textfield',
     '#title' => t('OpenVoxb URL'),
     '#description' => t('URL to voxb e.g.: https://voxb.addi.dk/1.3/'),
@@ -302,7 +311,7 @@ function open_voxb_form_ting_client_admin_webservices_settings_alter(&$form, &$f
     '#default_value' => variable_get('open_voxb_url', FALSE),
   );
 
-  $form['ting']['voxb_xsd_url'] = array(
+  $form['voxb']['voxb_xsd_url'] = array(
     '#type' => 'textfield',
     '#title' => t('voxb XSD URL'),
     '#description' => t('URL to voxb xml schema e.g. https://voxb.addi.dk/x.x/voxb.xsd'),
