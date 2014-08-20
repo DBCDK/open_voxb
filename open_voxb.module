@@ -136,6 +136,7 @@ function open_voxb_updateReview($voxbIdentifier, $review, $outputType = 'xml'){
  * @return bool|stdClass|string
  */
 function open_voxb_updateMyDataRequest($item, $voxbIdentifier, $outputType){
+
   $client = new ting_client_class();
   $response = $client->do_request('voxb', array(
     'action' => 'updateMyDataRequest',
@@ -150,6 +151,26 @@ function open_voxb_updateMyDataRequest($item, $voxbIdentifier, $outputType){
 }
 
 /******************* end updateMyDataRequest ************/
+
+
+
+/*************** deleteMyDataRequest ************/
+
+function open_voxb_deleteMyDataRequest($voxbIdentifier, $outputType = 'xml') {
+
+  $client = new ting_client_class();
+  $response = $client->do_request('voxb', array(
+    'action' => 'deleteMyDataRequest',
+    'voxbIdentifier' => $voxbIdentifier,
+    'institutionId' => '1',
+    'outputType' => $outputType,
+  ));
+
+  return $response;
+
+}
+
+
 
 /******************* fetchData *************************/
 
