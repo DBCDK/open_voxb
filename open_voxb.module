@@ -13,6 +13,24 @@ function open_voxb_ting_client_webservice() {
   return $ret;
 }
 
+/** Do reportOffensiveContentRequest.
+ *
+ * @param $userId
+ * @param $voxbId
+ * @return bool|stdClass|string
+ */
+function open_voxb_reportOffensiveContent ($userId, $voxbId, $outputType = 'xml') {
+  $client = new ting_client_class();
+  $response = $client->do_request('voxb', array(
+    'action' => 'reportOffensiveContentRequest',
+    'userId' => $userId,
+    'voxbIdentifier' => $voxbId,
+    'outputType' => $outputType,
+  ));
+
+  return $response;
+}
+
 
 
 /** Do createMyDataRequest. This method handles rating for given objectId.
