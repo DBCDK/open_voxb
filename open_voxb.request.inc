@@ -30,12 +30,13 @@ class open_voxb extends TingClientRequest Implements ITingClientRequestCache
      *
      * @return value of variable (drupal_get)
      **/
-    public function cacheEnable($value = NULL) {
-        $class_name = get_class($this);
-        return variable_get($class_name . TingClientRequest::cache_enable);
-    }
+  public function cacheEnable($value = NULL) {
+    $class_name = get_class($this);
 
-    /** \brief set timeout of cache
+    return variable_get($class_name . TingClientRequest::cache_enable);
+  }
+
+  /** \brief set timeout of cache
      *
      * @return mixed value of variable (variable_get)
      **/
@@ -49,7 +50,7 @@ class open_voxb extends TingClientRequest Implements ITingClientRequestCache
      * @return string; name of cachebin
      **/
     public function cacheBin() {
-        return 'cache_bibdk_webservice';
+        return 'cache_bibdk_webservices';
     }
 
     public function getVoxbIdentifier(){

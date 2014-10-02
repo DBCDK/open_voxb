@@ -104,6 +104,8 @@ function open_voxb_createMyReviewRequest($id, $review, $voxb_id, $identifierType
  * @return mixed;
  */
 function open_voxb_fetchMyDataRequest($userId, $outputType = 'xml') {
+  static $ret;
+  if(empty($ret)){
   $client = new ting_client_class();
   $response = $client->do_request('voxb', array(
       'action' => 'fetchMyDataRequest',
@@ -111,7 +113,9 @@ function open_voxb_fetchMyDataRequest($userId, $outputType = 'xml') {
       'outputType' => $outputType,
     ));
 
-  return $response;
+  $ret = $response;
+  }
+  return $ret;
 }
 
 /*************** updateMyDataRequest ************
@@ -228,28 +232,32 @@ function open_voxb_fetchData_by_itemid($itemid, $outputType = 'xml'){
  * @param string $outputType
  * @return bool|stdClass|string
  */
-function open_voxb_fetchData($fetchData, $institutionId = NULL, $outputType = 'xml'){
-  // institutionid (optional)
-  if(isset($institutionId)){
-    $fetchData['institutionId'] = $institutionId;
+function open_voxb_fetchData($fetchData, $institutionId = NULL, $outputType = 'xml') {
+  static $ret;
+  if (empty($ret)) {
+    // institutionid (optional)
+    if (isset($institutionId)) {
+      $fetchData['institutionId'] = $institutionId;
+    }
+    // contentytper. possible values:
+    // review, tags, summaryTags, rating, totalRatings, local or all
+    $output = array(
+      'contentType' => 'all',
+    );
+
+    $client = new ting_client_class();
+    $response = $client->do_request('voxb', array(
+      'action' => 'fetchDataRequest',
+      'fetchData' => $fetchData,
+      'output' => $output,
+      'outputType' => $outputType,
+    ));
+
+    $ret = $response;
   }
-  // contentytper. possible values:
-  // review, tags, summaryTags, rating, totalRatings, local or all
-  $output = array(
-    'contentType' => 'all',
-  );
 
-  $client = new ting_client_class();
-  $response = $client->do_request('voxb', array(
-    'action' => 'fetchDataRequest',
-    'fetchData' => $fetchData,
-    'output' => $output,
-    'outputType' => $outputType,
-  ));
-
-  return $response;
+  return $ret;
 }
-
 
 /*****************' end fetchData ******************************7
 
@@ -289,14 +297,18 @@ function open_voxb_createUserRequest($userId, $outputType = 'xml') {
  * @return mixed
  */
 function open_voxb_fetch_user($userId, $outputType = 'xml'){
-  $client = new ting_client_class();
-  $response = $client->do_request('voxb', array(
-      'action' => 'fetchUserRequest',
-      'userId' => $userId,
-      'outputType' => $outputType,
-    )
-  );
-  return $response;
+  static $ret;
+  if (empty($ret)) {
+    $client = new ting_client_class();
+    $response = $client->do_request('voxb', array(
+        'action' => 'fetchUserRequest',
+        'userId' => $userId,
+        'outputType' => $outputType,
+      ));
+    $ret = $response;
+  }
+
+  return $ret;
 }
 
 /** Do fetchUserRequest by fingerprint
